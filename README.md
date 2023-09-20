@@ -4,6 +4,8 @@
 
 This document describes a means of sourcing high-entropy data from multiple remote sources, akin to [Entropy-as-a-Service](https://csrc.nist.gov/Projects/Entropy-as-a-Service).  The protocol described herein assumes the majority of sources "queried" can generate high-entropy random data, but carries protections against the scenario that one or more do not in reality.  Potential applications for this are networked compute resources where there is no reliable means of local generation of sufficiently random data.  "Trust" in the degree of entropy is via statistical probability, the more discrete sources of entropy queried (and redundantly so), the higher the likelihood of "good-quality randomness".
 
+A proof-of-concept Python implementation is included in this repository.
+
 ## Overview
 
 The "entropy client" contacts multiple remote "entropy servers", requesting random data.  These servers will respond with random data which will be combined to form a single (and overall smaller) random sample.
@@ -18,7 +20,7 @@ Alice requests 256 bit "entropy chunks" from 5 remote servers: Bob, George, Dan,
 
 Bob, George, Dan, Tim, and Jon all return Alice an entropy chunk (256 bits of random data) each.
 
-Alice secretly salts and hashes every unique permutation of `N-1` responses to reduce the dataset to her desired 4-chunk length:
+Alice secretly salts and hashes every unique permutation of `N-1` responses to reduce the dataset to her desired 4-chunk length, without allowing any one entropy chunk to unfairly sway the result:
 
 ```
   d1 = SHA256(secretSalt + Bob  + Grge + Dan + Tim)
@@ -47,7 +49,7 @@ The servers generating random data should salt and hash their responses to prote
 
 The salt may simply be the IP address and port number of the client.
 
-## Increasing "entropy redundancy"
+## Increasing "entropic redundancy"
 
 In the example above, Alice used an `N+1` entropy chunk redundancy.  This can be increased, using more entropy servers (e.g.: `2N`, called `e1` through `e8`):
 
